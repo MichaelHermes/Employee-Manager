@@ -78,6 +78,36 @@ class Database {
 			throw new Error(`Error retrieving employees: ${error}`);
 		}
 	}
+
+	async addEmployeeAsync(first, last, role, manager) {
+		try {
+			const managerNames = manager.trim().split(" ");
+			await this.executeQueryAsync(
+				`SET @roleId = (SELECT id FROM \`role\` WHERE title = ?);
+				SET @managerId = (SELECT id FROM employee WHERE first_name = ? AND last_name = ?);
+				INSERT INTO employee (first_name, last_name, role_id, manager_id)
+				VALUES (?, ?, @roleId, @managerId)`,
+				[role, managerNames[0], managerNames[1], first, last]
+			);
+		} catch (error) {
+			throw new Error(`Error adding department: ${error}`);
+		}
+	}
+
+	async updateEmployeeAsync(employee, role) {
+		try {
+			const employeeNames = employee.trim().split(" ");
+			await this.executeQueryAsync(
+				`SET @roleId = (SELECT id FROM \`role\` WHERE title = ?);
+				UPDATE employee
+				SET role_id = @roleId
+				WHERE first_name = ? AND last_name = ?`,
+				[role, employeeNames[0], employeeNames[1]]
+			);
+		} catch (error) {
+			throw new Error(`Error adding department: ${error}`);
+		}
+	}
 }
 
 module.exports = Database;

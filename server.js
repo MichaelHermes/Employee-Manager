@@ -41,10 +41,18 @@ let mainMenu = async () => {
 					console.log(`Added ${title} role to the database`);
 					break;
 				case inquirer.actions.ADDEMPLOYEE:
-					// TODO: Add logic to add a new employee
+					answers = await inquirer.promptAddEmployeeAsync();
+					if (!answers) throw new Error("Missing employee information");
+					const { first, last, role: addRole, manager } = answers;
+					await db.addEmployeeAsync(first, last, addRole, manager);
+					console.log(`Added ${first} ${last} to the database`);
 					break;
 				case inquirer.actions.UPDATEEMPLOYEE:
-					// TODO: Add logic to update an employee's role
+					answers = await inquirer.promptUpdateEmployeeAsync();
+					if (!answers) throw new Error("Invalid employee update information");
+					const { employee, role: updateRole } = answers;
+					await db.updateEmployeeAsync(employee, updateRole);
+					console.log(`Updated ${employee}'s role in the database`);
 					break;
 				default:
 					quit = true;

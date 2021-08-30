@@ -111,6 +111,103 @@ class Inquirer {
 				});
 		});
 	}
+
+	async promptAddEmployeeAsync() {
+		const prompts = await this.buildEmployeePromptsAsync();
+		return new Promise((resolve, reject) => {
+			inquirer
+				.prompt(prompts)
+				.then(answers => {
+					resolve(answers);
+				})
+				.catch(error => {
+					reject(error);
+				});
+		});
+	}
+
+	async promptUpdateEmployeeAsync() {
+		const prompts = await this.buildEmployeePromptsAsync(true);
+		return new Promise((resolve, reject) => {
+			inquirer
+				.prompt(prompts)
+				.then(answers => {
+					resolve(answers);
+				})
+				.catch(error => {
+					reject(error);
+				});
+		});
+	}
+
+	async buildRolePromptsAsync() {
+		const departmentNames = (await this._db.getAllDepartmentsAsync()).map(
+			d => d.name
+		);
+		return [
+			{
+				name: "title",
+				message: "What is the name of the role?",
+			},
+			{
+				name: "salary",
+				message: "What is the salary of the role?",
+			},
+			{
+				type: "list",
+				name: "departmentName",
+				message: "which department does the role belong to?",
+				choices: departmentNames,
+			},
+		];
+	}
+
+	async buildEmployeePromptsAsync(update) {
+		const roleNames = (await this._db.getAllRolesAsync()).map(r => r.title);
+		const employeeNames = (await this._db.getAllEmployeesAsync()).map(e =>
+			e.first_name.concat(" ", e.last_name)
+		);
+
+		if (!update) {
+			return [
+				{
+					name: "first",
+					message: "What is the employee's first name?",
+				},
+				{
+					name: "last",
+					message: "What is the employee's last name?",
+				},
+				{
+					type: "list",
+					name: "role",
+					message: "What is the employee's role?",
+					choices: roleNames,
+				},
+				{
+					type: "list",
+					name: "manager",
+					message: "Who is the employee's manager?",
+					choices: employeeNames,
+				},
+			];
+		} else {
+			return [
+				{
+					type: "list",
+					name: "employee",
+					message: "Which employee's role do you want to update?",
+					choices: employeeNames,
+				},
+				{
+					type: "list",
+					name: "role",
+					message: "Which role do you want to assign the selected employee?",
+					choices: roleNames,
+				},
+			];
+		}
+	}
 }
 
 module.exports = Inquirer;
