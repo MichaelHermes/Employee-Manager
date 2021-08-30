@@ -81,6 +81,36 @@ class Inquirer {
 				});
 		});
 	}
+
+	async promptAddDepartmentAsync() {
+		return new Promise((resolve, reject) => {
+			inquirer
+				.prompt({
+					name: "name",
+					message: "What is the name of the department?",
+				})
+				.then(answers => {
+					resolve(answers);
+				})
+				.catch(error => {
+					reject(error);
+				});
+		});
+	}
+
+	async promptAddRoleAsync() {
+		const prompts = await this.buildRolePromptsAsync();
+		return new Promise((resolve, reject) => {
+			inquirer
+				.prompt(prompts)
+				.then(answers => {
+					resolve(answers);
+				})
+				.catch(error => {
+					reject(error);
+				});
+		});
+	}
 }
 
 module.exports = Inquirer;

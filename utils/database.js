@@ -29,6 +29,17 @@ class Database {
 		}
 	}
 
+	async addDepartmentAsync(name) {
+		try {
+			await this.executeQueryAsync(
+				"INSERT INTO department (name) VALUES (?)",
+				name
+			);
+		} catch (error) {
+			throw new Error(`Error adding department: ${error}`);
+		}
+	}
+
 	async getAllRolesAsync() {
 		try {
 			return await this.executeQueryAsync(
@@ -38,6 +49,19 @@ class Database {
 			);
 		} catch (error) {
 			throw new Error(`Error retrieving roles: ${error}`);
+		}
+	}
+
+	async addRoleAsync(title, salary, departmentName) {
+		try {
+			await this.executeQueryAsync(
+				`SET @departmentId = (SELECT id FROM department WHERE name = ?);
+				INSERT INTO \`role\` (title, salary, department_id)
+				VALUES (?, ?, @departmentId)`,
+				[departmentName, title, salary]
+			);
+		} catch (error) {
+			throw new Error(`Error adding department: ${error}`);
 		}
 	}
 

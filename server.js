@@ -27,10 +27,18 @@ let mainMenu = async () => {
 					console.table(await db.getAllEmployeesAsync());
 					break;
 				case inquirer.actions.ADDDEPARTMENT:
-					// TODO: Add logic to add a new department
+					answers = await inquirer.promptAddDepartmentAsync();
+					if (!answers) throw new Error("Missing department name");
+					const { name } = answers;
+					await db.addDepartmentAsync(name);
+					console.log(`Added ${name} department to the database`);
 					break;
 				case inquirer.actions.ADDROLE:
-					// TODO: Add logic to add a new role
+					answers = await inquirer.promptAddRoleAsync();
+					if (!answers) throw new Error("Missing role information");
+					const { title, salary, departmentName } = answers;
+					await db.addRoleAsync(title, parseInt(salary), departmentName);
+					console.log(`Added ${title} role to the database`);
 					break;
 				case inquirer.actions.ADDEMPLOYEE:
 					// TODO: Add logic to add a new employee
