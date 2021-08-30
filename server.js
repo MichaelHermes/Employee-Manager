@@ -18,13 +18,13 @@ let mainMenu = async () => {
 		if (db && action) {
 			switch (action) {
 				case inquirer.actions.VIEWDEPARTMENTS:
-					// TODO: Add logic to get all departments
+					console.table(await db.getAllDepartmentsAsync());
 					break;
 				case inquirer.actions.VIEWROLES:
-					// TODO: Add logic to get all roles
+					console.table(await db.getAllRolesAsync());
 					break;
 				case inquirer.actions.VIEWEMPLOYEES:
-					// TODO: Add logic to get all employees
+					console.table(await db.getAllEmployeesAsync());
 					break;
 				case inquirer.actions.ADDDEPARTMENT:
 					// TODO: Add logic to add a new department
