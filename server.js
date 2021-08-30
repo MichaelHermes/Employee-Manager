@@ -1,11 +1,56 @@
 const express = require("express");
+const cTable = require("console.table");
+const Inquirer = require("./utils/inquirer");
 
 const PORT = process.env.PORT || 3001;
 const app = express();
+const inquirer = new Inquirer();
 
 // Express middleware
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
+
+let mainMenu = async () => {
+	let quit = false;
+
+	try {
+		const { db, action } = await inquirer.promptMainMenuAsync();
+		if (db && action) {
+			switch (action) {
+				case inquirer.actions.VIEWDEPARTMENTS:
+					// TODO: Add logic to get all departments
+					break;
+				case inquirer.actions.VIEWROLES:
+					// TODO: Add logic to get all roles
+					break;
+				case inquirer.actions.VIEWEMPLOYEES:
+					// TODO: Add logic to get all employees
+					break;
+				case inquirer.actions.ADDDEPARTMENT:
+					// TODO: Add logic to add a new department
+					break;
+				case inquirer.actions.ADDROLE:
+					// TODO: Add logic to add a new role
+					break;
+				case inquirer.actions.ADDEMPLOYEE:
+					// TODO: Add logic to add a new employee
+					break;
+				case inquirer.actions.UPDATEEMPLOYEE:
+					// TODO: Add logic to update an employee's role
+					break;
+				default:
+					quit = true;
+					break;
+			}
+		}
+
+		if (!quit) {
+			await mainMenu(); // Recursively call back to the 'mainMenu' function to allow the user to continue making selections.
+		}
+	} catch (error) {
+		console.error(error);
+	}
+};
 
 // Default response for any other request (Not Found)
 app.use((req, res) => {
@@ -13,3 +58,5 @@ app.use((req, res) => {
 });
 
 app.listen(PORT, () => {});
+
+mainMenu();
