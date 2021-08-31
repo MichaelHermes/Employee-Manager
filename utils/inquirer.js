@@ -7,6 +7,8 @@ class Inquirer {
 			VIEWDEPARTMENTS: "View All Departments",
 			VIEWROLES: "View All Roles",
 			VIEWEMPLOYEES: "View All Employees",
+			VIEWEMPLOYEESBYMANAGER: "View All Employees By Manager",
+			VIEWEMPLOYEESBYDEPARTMENT: "View All Employees By Department",
 			ADDDEPARTMENT: "Add Department",
 			ADDROLE: "Add Role",
 			ADDEMPLOYEE: "Add Employee",
@@ -23,6 +25,8 @@ class Inquirer {
 				this._actions.VIEWDEPARTMENTS,
 				this._actions.VIEWROLES,
 				this._actions.VIEWEMPLOYEES,
+				this._actions.VIEWEMPLOYEESBYMANAGER,
+				this._actions.VIEWEMPLOYEESBYDEPARTMENT,
 				new inquirer.Separator(),
 				this._actions.ADDDEPARTMENT,
 				this._actions.ADDROLE,
@@ -55,28 +59,40 @@ class Inquirer {
 						case 3:
 							resolve({ db: this._db, action: this._actions.VIEWEMPLOYEES });
 							break;
-						case 5:
-							resolve({ db: this._db, action: this._actions.ADDDEPARTMENT });
+						case 4:
+							resolve({
+								db: this._db,
+								action: this._actions.VIEWEMPLOYEESBYMANAGER,
+							});
 							break;
-						case 6:
-							resolve({ db: this._db, action: this._actions.ADDROLE });
+						case 5:
+							resolve({
+								db: this._db,
+								action: this._actions.VIEWEMPLOYEESBYDEPARTMENT,
+							});
 							break;
 						case 7:
-							resolve({ db: this._db, action: this._actions.ADDEMPLOYEE });
+							resolve({ db: this._db, action: this._actions.ADDDEPARTMENT });
+							break;
+						case 8:
+							resolve({ db: this._db, action: this._actions.ADDROLE });
 							break;
 						case 9:
+							resolve({ db: this._db, action: this._actions.ADDEMPLOYEE });
+							break;
+						case 11:
 							resolve({
 								db: this._db,
 								action: this._actions.UPDATEEMPLOYEEROLE,
 							});
 							break;
-						case 10:
+						case 12:
 							resolve({
 								db: this._db,
 								action: this._actions.UPDATEEMPLOYEEMANAGER,
 							});
 							break;
-						case 11:
+						case 13:
 							resolve({ db: this._db, action: this._actions.QUIT });
 							break;
 					}
@@ -165,6 +181,38 @@ class Inquirer {
 		});
 	}
 
+	async promptViewEmployeesByManagerAsync() {
+		const prompts = await this.buildEmployeePromptsAsync(
+			this._actions.VIEWEMPLOYEESBYMANAGER
+		);
+		return new Promise((resolve, reject) => {
+			inquirer
+				.prompt(prompts)
+				.then(answers => {
+					resolve(answers);
+				})
+				.catch(error => {
+					reject(error);
+				});
+		});
+	}
+
+	async promptViewEmployeesByDepartmentAsync() {
+		const prompts = await this.buildEmployeePromptsAsync(
+			this._actions.VIEWEMPLOYEESBYDEPARTMENT
+		);
+		return new Promise((resolve, reject) => {
+			inquirer
+				.prompt(prompts)
+				.then(answers => {
+					resolve(answers);
+				})
+				.catch(error => {
+					reject(error);
+				});
+		});
+	}
+
 	async buildRolePromptsAsync() {
 		const departmentNames = (await this._db.getAllDepartmentsAsync()).map(
 			d => d.name
@@ -181,7 +229,7 @@ class Inquirer {
 			{
 				type: "list",
 				name: "departmentName",
-				message: "which department does the role belong to?",
+				message: "Which department does the role belong to?",
 				choices: departmentNames,
 			},
 		];
@@ -191,6 +239,10 @@ class Inquirer {
 		const roleNames = (await this._db.getAllRolesAsync()).map(r => r.title);
 		const employeeNames = (await this._db.getAllEmployeesAsync()).map(e =>
 			e.first_name.concat(" ", e.last_name)
+		);
+		const managerNames = await this._db.getAllManagersAsync();
+		const departmentNames = (await this._db.getAllDepartmentsAsync()).map(
+			d => d.name
 		);
 
 		switch (action) {
@@ -245,6 +297,24 @@ class Inquirer {
 						name: "manager",
 						message: "Who is the employee's new manager?",
 						choices: employeeNames,
+					},
+				];
+			case this._actions.VIEWEMPLOYEESBYMANAGER:
+				return [
+					{
+						type: "list",
+						name: "manager",
+						message: "Which manager's employees would you like to see?",
+						choices: managerNames,
+					},
+				];
+			case this._actions.VIEWEMPLOYEESBYDEPARTMENT:
+				return [
+					{
+						type: "list",
+						name: "department",
+						message: "Which department's employees would you like to see?",
+						choices: departmentNames,
 					},
 				];
 		}

@@ -26,6 +26,20 @@ let mainMenu = async () => {
 				case inquirer.actions.VIEWEMPLOYEES:
 					console.table(await db.getAllEmployeesAsync());
 					break;
+				case inquirer.actions.VIEWEMPLOYEESBYMANAGER:
+					answers = await inquirer.promptViewEmployeesByManagerAsync();
+					if (!answers) throw new Error("Missing manager selection");
+					const { manager: viewByManager } = answers;
+					console.table(await db.getAllEmployeesByManagerAsync(viewByManager));
+					break;
+				case inquirer.actions.VIEWEMPLOYEESBYDEPARTMENT:
+					answers = await inquirer.promptViewEmployeesByDepartmentAsync();
+					if (!answers) throw new Error("Missing department selection");
+					const { department: viewByDepartment } = answers;
+					console.table(
+						await db.getAllEmployeesByDepartmentAsync(viewByDepartment)
+					);
+					break;
 				case inquirer.actions.ADDDEPARTMENT:
 					answers = await inquirer.promptAddDepartmentAsync();
 					if (!answers) throw new Error("Missing department name");

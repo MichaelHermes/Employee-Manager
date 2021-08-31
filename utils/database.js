@@ -124,6 +124,59 @@ class Database {
 			throw new Error(`Error updating employee manager: ${error}`);
 		}
 	}
+
+	async getAllManagersAsync() {
+		try {
+			return await this.executeQueryAsync(
+				`SELECT CONCAT(first_name, ' ', last_name) AS name
+					FROM employee
+					WHERE id IN
+						(SELECT DISTINCT manager_id
+							FROM employee)`
+			);
+		} catch (error) {
+			throw new Error(`Error retrieving managers: ${error}`);
+		}
+	}
+
+	async getAllEmployeesByManagerAsync(manager) {
+		try {
+			const managerNames = manager.trim().split(" ");
+			return (
+				await this.executeQueryAsync(
+					`SET @managerId = (SELECT id FROM employee WHERE first_name = ? AND last_name = ?);
+					SELECT e.id, e.first_name, e.last_name, r.title, d.name, r.salary, CONCAT(m.first_name, ' ', m.last_name) AS manager
+						FROM employee e
+							JOIN \`role\` r ON r.id = e.role_id
+							JOIN department d ON d.id = r.department_id
+							LEFT JOIN employee m ON m.id = e.manager_id
+						WHERE e.manager_id = @managerId`,
+					[managerNames[0], managerNames[1]]
+				)
+			)[1];
+		} catch (error) {
+			throw new Error(`Error retrieving employees by manager: ${error}`);
+		}
+	}
+
+	async getAllEmployeesByDepartmentAsync(department) {
+		try {
+			return (
+				await this.executeQueryAsync(
+					`SET @departmentId = (SELECT id FROM department WHERE name = ?);
+				SELECT e.id, e.first_name, e.last_name, r.title, d.name, r.salary, CONCAT(m.first_name, ' ', m.last_name) AS manager
+					FROM employee e
+						JOIN \`role\` r ON r.id = e.role_id
+						JOIN department d ON d.id = r.department_id
+						LEFT JOIN employee m ON m.id = e.manager_id
+					WHERE d.id = @departmentId`,
+					[department]
+				)
+			)[1];
+		} catch (error) {
+			throw new Error(`Error retrieving employees by department: ${error}`);
+		}
+	}
 }
 
 module.exports = Database;
