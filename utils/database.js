@@ -164,12 +164,12 @@ class Database {
 			return (
 				await this.executeQueryAsync(
 					`SET @departmentId = (SELECT id FROM department WHERE name = ?);
-				SELECT e.id, e.first_name, e.last_name, r.title, d.name, r.salary, CONCAT(m.first_name, ' ', m.last_name) AS manager
-					FROM employee e
-						LEFT JOIN \`role\` r ON r.id = e.role_id
-						LEFT JOIN department d ON d.id = r.department_id
-						LEFT JOIN employee m ON m.id = e.manager_id
-					WHERE d.id = @departmentId`,
+					SELECT e.id, e.first_name, e.last_name, r.title, d.name, r.salary, CONCAT(m.first_name, ' ', m.last_name) AS manager
+						FROM employee e
+							LEFT JOIN \`role\` r ON r.id = e.role_id
+							LEFT JOIN department d ON d.id = r.department_id
+							LEFT JOIN employee m ON m.id = e.manager_id
+						WHERE d.id = @departmentId`,
 					[departmentName]
 				)
 			)[1];
@@ -215,6 +215,21 @@ class Database {
 			);
 		} catch (error) {
 			throw new Error(`Error deleting employee: ${error}`);
+		}
+	}
+
+	async getDepartmentUtilizedBudgetsAsync() {
+		try {
+			return await this.executeQueryAsync(
+				`SELECT d.name AS department, SUM(r.salary) AS utilized_budget
+				FROM employee e
+					LEFT JOIN \`role\` r ON r.id = e.role_id
+					LEFT JOIN department d ON d.id = r.department_id
+				GROUP BY d.name
+				ORDER BY SUM(r.salary) DESC`
+			);
+		} catch (error) {
+			throw new Error(`Error calculating department budgets: ${error}`);
 		}
 	}
 }

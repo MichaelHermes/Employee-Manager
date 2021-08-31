@@ -18,27 +18,36 @@ let mainMenu = async () => {
 		if (db && action) {
 			switch (action) {
 				case inquirer.actions.VIEWDEPARTMENTS:
+					console.log("");
 					console.table(await db.getAllDepartmentsAsync());
 					break;
 				case inquirer.actions.VIEWROLES:
+					console.log("");
 					console.table(await db.getAllRolesAsync());
 					break;
 				case inquirer.actions.VIEWEMPLOYEES:
+					console.log("");
 					console.table(await db.getAllEmployeesAsync());
 					break;
 				case inquirer.actions.VIEWEMPLOYEESBYMANAGER:
 					answers = await inquirer.promptViewEmployeesByManagerAsync();
 					if (!answers) throw new Error("Missing manager selection");
 					const { manager: viewByManager } = answers;
+					console.log("");
 					console.table(await db.getAllEmployeesByManagerAsync(viewByManager));
 					break;
 				case inquirer.actions.VIEWEMPLOYEESBYDEPARTMENT:
 					answers = await inquirer.promptViewEmployeesByDepartmentAsync();
 					if (!answers) throw new Error("Missing department selection");
 					const { department: viewByDepartment } = answers;
+					console.log("");
 					console.table(
 						await db.getAllEmployeesByDepartmentAsync(viewByDepartment)
 					);
+					break;
+				case inquirer.actions.VIEWUTILIZEDBUDGET:
+					console.log("");
+					console.table(await db.getDepartmentUtilizedBudgetsAsync());
 					break;
 				case inquirer.actions.ADDDEPARTMENT:
 					answers = await inquirer.promptAddDepartmentAsync();

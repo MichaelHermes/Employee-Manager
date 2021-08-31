@@ -9,6 +9,7 @@ class Inquirer {
 			VIEWEMPLOYEES: "View All Employees",
 			VIEWEMPLOYEESBYMANAGER: "View All Employees By Manager",
 			VIEWEMPLOYEESBYDEPARTMENT: "View All Employees By Department",
+			VIEWUTILIZEDBUDGET: "View Utilized Budget Summary",
 			ADDDEPARTMENT: "Add Department",
 			ADDROLE: "Add Role",
 			ADDEMPLOYEE: "Add Employee",
@@ -30,6 +31,7 @@ class Inquirer {
 				this._actions.VIEWEMPLOYEES,
 				this._actions.VIEWEMPLOYEESBYMANAGER,
 				this._actions.VIEWEMPLOYEESBYDEPARTMENT,
+				this._actions.VIEWUTILIZEDBUDGET,
 				new inquirer.Separator(),
 				this._actions.ADDDEPARTMENT,
 				this._actions.ADDROLE,
@@ -79,37 +81,43 @@ class Inquirer {
 								action: this._actions.VIEWEMPLOYEESBYDEPARTMENT,
 							});
 							break;
-						case 7:
-							resolve({ db: this._db, action: this._actions.ADDDEPARTMENT });
+						case 6:
+							resolve({
+								db: this._db,
+								action: this._actions.VIEWUTILIZEDBUDGET,
+							});
 							break;
 						case 8:
-							resolve({ db: this._db, action: this._actions.ADDROLE });
+							resolve({ db: this._db, action: this._actions.ADDDEPARTMENT });
 							break;
 						case 9:
+							resolve({ db: this._db, action: this._actions.ADDROLE });
+							break;
+						case 10:
 							resolve({ db: this._db, action: this._actions.ADDEMPLOYEE });
 							break;
-						case 11:
+						case 12:
 							resolve({
 								db: this._db,
 								action: this._actions.UPDATEEMPLOYEEROLE,
 							});
 							break;
-						case 12:
+						case 13:
 							resolve({
 								db: this._db,
 								action: this._actions.UPDATEEMPLOYEEMANAGER,
 							});
 							break;
-						case 14:
+						case 15:
 							resolve({ db: this._db, action: this._actions.DELETEDEPARTMENT });
 							break;
-						case 15:
+						case 16:
 							resolve({ db: this._db, action: this._actions.DELETEROLE });
 							break;
-						case 16:
+						case 17:
 							resolve({ db: this._db, action: this._actions.DELETEEMPLOYEE });
 							break;
-						case 18:
+						case 19:
 							resolve({ db: this._db, action: this._actions.QUIT });
 							break;
 					}
