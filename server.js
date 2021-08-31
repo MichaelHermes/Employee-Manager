@@ -43,16 +43,24 @@ let mainMenu = async () => {
 				case inquirer.actions.ADDEMPLOYEE:
 					answers = await inquirer.promptAddEmployeeAsync();
 					if (!answers) throw new Error("Missing employee information");
-					const { first, last, role: addRole, manager } = answers;
-					await db.addEmployeeAsync(first, last, addRole, manager);
+					const { first, last, role: addRole, manager: addManager } = answers;
+					await db.addEmployeeAsync(first, last, addRole, addManager);
 					console.log(`Added ${first} ${last} to the database`);
 					break;
-				case inquirer.actions.UPDATEEMPLOYEE:
-					answers = await inquirer.promptUpdateEmployeeAsync();
-					if (!answers) throw new Error("Invalid employee update information");
-					const { employee, role: updateRole } = answers;
-					await db.updateEmployeeAsync(employee, updateRole);
-					console.log(`Updated ${employee}'s role in the database`);
+				case inquirer.actions.UPDATEEMPLOYEEROLE:
+					answers = await inquirer.promptUpdateEmployeeRoleAsync();
+					if (!answers) throw new Error("Invalid employee role information");
+					const { employee: updateRoleEmp, role: updateRole } = answers;
+					await db.updateEmployeeRoleAsync(updateRoleEmp, updateRole);
+					console.log(`Updated ${updateRoleEmp}'s role in the database`);
+					break;
+				case inquirer.actions.UPDATEEMPLOYEEMANAGER:
+					answers = await inquirer.promptUpdateEmployeeManagerAsync();
+					if (!answers) throw new Error("Invalid employee manager information");
+					const { employee: updateManagerEmp, manager: updateManager } =
+						answers;
+					await db.updateEmployeeManagerAsync(updateManagerEmp, updateManager);
+					console.log(`Updated ${updateManagerEmp}'s manager in the database`);
 					break;
 				default:
 					quit = true;

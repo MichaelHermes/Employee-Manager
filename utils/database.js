@@ -6,7 +6,7 @@ class Database {
 		this.pool = mysql.createPool({
 			host: "localhost",
 			user: "root", // MySQL username
-			password: "", // MySQL password
+			password: "1stmile1234", // MySQL password
 			database: "company_db",
 			connectionLimit: 10,
 			multipleStatements: true,
@@ -61,7 +61,7 @@ class Database {
 				[departmentName, title, salary]
 			);
 		} catch (error) {
-			throw new Error(`Error adding department: ${error}`);
+			throw new Error(`Error adding role: ${error}`);
 		}
 	}
 
@@ -90,11 +90,11 @@ class Database {
 				[role, managerNames[0], managerNames[1], first, last]
 			);
 		} catch (error) {
-			throw new Error(`Error adding department: ${error}`);
+			throw new Error(`Error adding employee: ${error}`);
 		}
 	}
 
-	async updateEmployeeAsync(employee, role) {
+	async updateEmployeeRoleAsync(employee, role) {
 		try {
 			const employeeNames = employee.trim().split(" ");
 			await this.executeQueryAsync(
@@ -105,7 +105,23 @@ class Database {
 				[role, employeeNames[0], employeeNames[1]]
 			);
 		} catch (error) {
-			throw new Error(`Error adding department: ${error}`);
+			throw new Error(`Error updating employee role: ${error}`);
+		}
+	}
+
+	async updateEmployeeManagerAsync(employee, manager) {
+		try {
+			const employeeNames = employee.trim().split(" ");
+			const managerNames = manager.trim().split(" ");
+			await this.executeQueryAsync(
+				`SET @managerId = (SELECT id FROM employee WHERE first_name = ? AND last_name = ?);
+				UPDATE employee
+				SET manager_id = @managerId
+				WHERE first_name = ? AND last_name = ?`,
+				[managerNames[0], managerNames[1], employeeNames[0], employeeNames[1]]
+			);
+		} catch (error) {
+			throw new Error(`Error updating employee manager: ${error}`);
 		}
 	}
 }

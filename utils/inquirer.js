@@ -10,7 +10,8 @@ class Inquirer {
 			ADDDEPARTMENT: "Add Department",
 			ADDROLE: "Add Role",
 			ADDEMPLOYEE: "Add Employee",
-			UPDATEEMPLOYEE: "Update Employee Role",
+			UPDATEEMPLOYEEROLE: "Update Employee Role",
+			UPDATEEMPLOYEEMANAGER: "Update Employee Manager",
 			QUIT: "Quit",
 		};
 		this._db = new Database();
@@ -27,17 +28,12 @@ class Inquirer {
 				this._actions.ADDROLE,
 				this._actions.ADDEMPLOYEE,
 				new inquirer.Separator(),
-				this._actions.UPDATEEMPLOYEE,
+				this._actions.UPDATEEMPLOYEEROLE,
+				this._actions.UPDATEEMPLOYEEMANAGER,
 				this._actions.QUIT,
 				new inquirer.Separator(),
 			],
 		};
-		this._newDepartment = [
-			{
-				name: "name",
-				message: "What is the name of the department?",
-			},
-		];
 	}
 
 	get actions() {
@@ -69,9 +65,18 @@ class Inquirer {
 							resolve({ db: this._db, action: this._actions.ADDEMPLOYEE });
 							break;
 						case 9:
-							resolve({ db: this._db, action: this._actions.UPDATEEMPLOYEE });
+							resolve({
+								db: this._db,
+								action: this._actions.UPDATEEMPLOYEEROLE,
+							});
 							break;
 						case 10:
+							resolve({
+								db: this._db,
+								action: this._actions.UPDATEEMPLOYEEMANAGER,
+							});
+							break;
+						case 11:
 							resolve({ db: this._db, action: this._actions.QUIT });
 							break;
 					}
@@ -113,7 +118,9 @@ class Inquirer {
 	}
 
 	async promptAddEmployeeAsync() {
-		const prompts = await this.buildEmployeePromptsAsync();
+		const prompts = await this.buildEmployeePromptsAsync(
+			this._actions.ADDEMPLOYEE
+		);
 		return new Promise((resolve, reject) => {
 			inquirer
 				.prompt(prompts)
@@ -126,8 +133,26 @@ class Inquirer {
 		});
 	}
 
-	async promptUpdateEmployeeAsync() {
-		const prompts = await this.buildEmployeePromptsAsync(true);
+	async promptUpdateEmployeeRoleAsync() {
+		const prompts = await this.buildEmployeePromptsAsync(
+			this._actions.UPDATEEMPLOYEEROLE
+		);
+		return new Promise((resolve, reject) => {
+			inquirer
+				.prompt(prompts)
+				.then(answers => {
+					resolve(answers);
+				})
+				.catch(error => {
+					reject(error);
+				});
+		});
+	}
+
+	async promptUpdateEmployeeManagerAsync() {
+		const prompts = await this.buildEmployeePromptsAsync(
+			this._actions.UPDATEEMPLOYEEMANAGER
+		);
 		return new Promise((resolve, reject) => {
 			inquirer
 				.prompt(prompts)
@@ -162,50 +187,66 @@ class Inquirer {
 		];
 	}
 
-	async buildEmployeePromptsAsync(update) {
+	async buildEmployeePromptsAsync(action) {
 		const roleNames = (await this._db.getAllRolesAsync()).map(r => r.title);
 		const employeeNames = (await this._db.getAllEmployeesAsync()).map(e =>
 			e.first_name.concat(" ", e.last_name)
 		);
 
-		if (!update) {
-			return [
-				{
-					name: "first",
-					message: "What is the employee's first name?",
-				},
-				{
-					name: "last",
-					message: "What is the employee's last name?",
-				},
-				{
-					type: "list",
-					name: "role",
-					message: "What is the employee's role?",
-					choices: roleNames,
-				},
-				{
-					type: "list",
-					name: "manager",
-					message: "Who is the employee's manager?",
-					choices: employeeNames,
-				},
-			];
-		} else {
-			return [
-				{
-					type: "list",
-					name: "employee",
-					message: "Which employee's role do you want to update?",
-					choices: employeeNames,
-				},
-				{
-					type: "list",
-					name: "role",
-					message: "Which role do you want to assign the selected employee?",
-					choices: roleNames,
-				},
-			];
+		switch (action) {
+			case this._actions.ADDEMPLOYEE:
+				return [
+					{
+						name: "first",
+						message: "What is the employee's first name?",
+					},
+					{
+						name: "last",
+						message: "What is the employee's last name?",
+					},
+					{
+						type: "list",
+						name: "role",
+						message: "What is the employee's role?",
+						choices: roleNames,
+					},
+					{
+						type: "list",
+						name: "manager",
+						message: "Who is the employee's manager?",
+						choices: employeeNames,
+					},
+				];
+			case this._actions.UPDATEEMPLOYEEROLE:
+				return [
+					{
+						type: "list",
+						name: "employee",
+						message: "Which employee's role do you want to update?",
+						choices: employeeNames,
+					},
+					{
+						type: "list",
+						name: "role",
+						message: "Which role do you want to assign the selected employee?",
+						choices: roleNames,
+					},
+				];
+			case this._actions.UPDATEEMPLOYEEMANAGER:
+				return [
+					{
+						type: "list",
+						name: "employee",
+						message: "Which employee's manager do you want to update?",
+						choices: employeeNames,
+					},
+					{
+						type: "list",
+						name: "manager",
+						message: "Who is the employee's new manager?",
+						choices: employeeNames,
+					},
+				];
 		}
 	}
 }
