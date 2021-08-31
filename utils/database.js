@@ -43,7 +43,7 @@ class Database {
 	async getAllRolesAsync() {
 		try {
 			return await this.executeQueryAsync(
-				`SELECT r.id, r.title, d.name AS department, r.salary
+				`SELECT r.id, r.title AS role, d.name AS department, r.salary
 					FROM \`role\` r
 						JOIN department d ON d.id = r.department_id`
 			);
@@ -68,7 +68,7 @@ class Database {
 	async getAllEmployeesAsync() {
 		try {
 			return await this.executeQueryAsync(
-				`SELECT e.id, e.first_name, e.last_name, r.title, d.name, r.salary, CONCAT(m.first_name, ' ', m.last_name) AS manager
+				`SELECT e.id, e.first_name, e.last_name, COALESCE(r.title, '-') AS role, COALESCE(d.name, '-') AS department, COALESCE(r.salary, '-') AS salary, COALESCE(CONCAT(m.first_name, ' ', m.last_name), '-') AS manager
 					FROM employee e
 						LEFT JOIN \`role\` r ON r.id = e.role_id
 						LEFT JOIN department d ON d.id = r.department_id
@@ -145,7 +145,7 @@ class Database {
 			return (
 				await this.executeQueryAsync(
 					`SET @managerId = (SELECT id FROM employee WHERE first_name = ? AND last_name = ?);
-					SELECT e.id, e.first_name, e.last_name, r.title, d.name, r.salary, CONCAT(m.first_name, ' ', m.last_name) AS manager
+					SELECT e.id, e.first_name, e.last_name, COALESCE(r.title, '-') AS role, COALESCE(d.name, '-') AS department, COALESCE(r.salary, '-') AS salary, COALESCE(CONCAT(m.first_name, ' ', m.last_name), '-') AS manager
 						FROM employee e
 							LEFT JOIN \`role\` r ON r.id = e.role_id
 							LEFT JOIN department d ON d.id = r.department_id
@@ -164,7 +164,7 @@ class Database {
 			return (
 				await this.executeQueryAsync(
 					`SET @departmentId = (SELECT id FROM department WHERE name = ?);
-					SELECT e.id, e.first_name, e.last_name, r.title, d.name, r.salary, CONCAT(m.first_name, ' ', m.last_name) AS manager
+					SELECT e.id, e.first_name, e.last_name, COALESCE(r.title, '-') AS role, COALESCE(d.name, '-') AS department, COALESCE(r.salary, '-') AS salary, COALESCE(CONCAT(m.first_name, ' ', m.last_name), '-') AS manager
 						FROM employee e
 							LEFT JOIN \`role\` r ON r.id = e.role_id
 							LEFT JOIN department d ON d.id = r.department_id
@@ -223,8 +223,8 @@ class Database {
 			return await this.executeQueryAsync(
 				`SELECT d.name AS department, SUM(r.salary) AS utilized_budget
 				FROM employee e
-					LEFT JOIN \`role\` r ON r.id = e.role_id
-					LEFT JOIN department d ON d.id = r.department_id
+					JOIN \`role\` r ON r.id = e.role_id
+					JOIN department d ON d.id = r.department_id
 				GROUP BY d.name
 				ORDER BY SUM(r.salary) DESC`
 			);

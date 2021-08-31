@@ -347,7 +347,7 @@ class Inquirer {
 						type: "list",
 						name: "manager",
 						message: "Who is the employee's manager?",
-						choices: employeeNames,
+						choices: ["None", ...employeeNames],
 					},
 				];
 			case this._actions.UPDATEEMPLOYEEROLE:
@@ -377,7 +377,7 @@ class Inquirer {
 						type: "list",
 						name: "manager",
 						message: "Who is the employee's new manager?",
-						choices: employeeNames,
+						choices: ["None", ...employeeNames],
 					},
 				];
 			case this._actions.VIEWEMPLOYEESBYMANAGER:
