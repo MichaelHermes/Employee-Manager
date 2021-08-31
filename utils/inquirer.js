@@ -14,6 +14,9 @@ class Inquirer {
 			ADDEMPLOYEE: "Add Employee",
 			UPDATEEMPLOYEEROLE: "Update Employee Role",
 			UPDATEEMPLOYEEMANAGER: "Update Employee Manager",
+			DELETEDEPARTMENT: "Delete Department",
+			DELETEROLE: "Delete Role",
+			DELETEEMPLOYEE: "Delete Employee",
 			QUIT: "Quit",
 		};
 		this._db = new Database();
@@ -34,6 +37,11 @@ class Inquirer {
 				new inquirer.Separator(),
 				this._actions.UPDATEEMPLOYEEROLE,
 				this._actions.UPDATEEMPLOYEEMANAGER,
+				new inquirer.Separator(),
+				this._actions.DELETEDEPARTMENT,
+				this._actions.DELETEROLE,
+				this._actions.DELETEEMPLOYEE,
+				new inquirer.Separator(),
 				this._actions.QUIT,
 				new inquirer.Separator(),
 			],
@@ -92,7 +100,16 @@ class Inquirer {
 								action: this._actions.UPDATEEMPLOYEEMANAGER,
 							});
 							break;
-						case 13:
+						case 14:
+							resolve({ db: this._db, action: this._actions.DELETEDEPARTMENT });
+							break;
+						case 15:
+							resolve({ db: this._db, action: this._actions.DELETEROLE });
+							break;
+						case 16:
+							resolve({ db: this._db, action: this._actions.DELETEEMPLOYEE });
+							break;
+						case 18:
 							resolve({ db: this._db, action: this._actions.QUIT });
 							break;
 					}
@@ -213,6 +230,62 @@ class Inquirer {
 		});
 	}
 
+	async promptDeleteDepartmentAsync() {
+		const departmentNames = (await this._db.getAllDepartmentsAsync()).map(
+			d => d.name
+		);
+		return new Promise((resolve, reject) => {
+			inquirer
+				.prompt({
+					type: "list",
+					name: "department",
+					message: "Which department would you like to delete?",
+					choices: departmentNames,
+				})
+				.then(answers => {
+					resolve(answers);
+				})
+				.catch(error => {
+					reject(error);
+				});
+		});
+	}
+
+	async promptDeleteRoleAsync() {
+		const roleNames = (await this._db.getAllRolesAsync()).map(r => r.title);
+		return new Promise((resolve, reject) => {
+			inquirer
+				.prompt({
+					type: "list",
+					name: "role",
+					message: "Which role would you like to delete?",
+					choices: roleNames,
+				})
+				.then(answers => {
+					resolve(answers);
+				})
+				.catch(error => {
+					reject(error);
+				});
+		});
+	}
+
+	async promptDeleteEmployeeAsync() {
+		const prompts = await this.buildEmployeePromptsAsync(
+			this._actions.DELETEEMPLOYEE
+		);
+		return new Promise((resolve, reject) => {
+			inquirer
+				.prompt(prompts)
+				.then(answers => {
+					resolve(answers);
+				})
+				.catch(error => {
+					reject(error);
+				});
+		});
+	}
+
 	async buildRolePromptsAsync() {
 		const departmentNames = (await this._db.getAllDepartmentsAsync()).map(
 			d => d.name
@@ -228,7 +301,7 @@ class Inquirer {
 			},
 			{
 				type: "list",
-				name: "departmentName",
+				name: "department",
 				message: "Which department does the role belong to?",
 				choices: departmentNames,
 			},
@@ -315,6 +388,15 @@ class Inquirer {
 						name: "department",
 						message: "Which department's employees would you like to see?",
 						choices: departmentNames,
+					},
+				];
+			case this._actions.DELETEEMPLOYEE:
+				return [
+					{
+						type: "list",
+						name: "employee",
+						message: "Which employee would you like to delete?",
+						choices: employeeNames,
 					},
 				];
 		}

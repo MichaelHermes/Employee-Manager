@@ -29,11 +29,11 @@ class Database {
 		}
 	}
 
-	async addDepartmentAsync(name) {
+	async addDepartmentAsync(departmentName) {
 		try {
 			await this.executeQueryAsync(
 				"INSERT INTO department (name) VALUES (?)",
-				name
+				departmentName
 			);
 		} catch (error) {
 			throw new Error(`Error adding department: ${error}`);
@@ -52,13 +52,13 @@ class Database {
 		}
 	}
 
-	async addRoleAsync(title, salary, departmentName) {
+	async addRoleAsync(roleTitle, roleSalary, departmentName) {
 		try {
 			await this.executeQueryAsync(
 				`SET @departmentId = (SELECT id FROM department WHERE name = ?);
 				INSERT INTO \`role\` (title, salary, department_id)
 				VALUES (?, ?, @departmentId)`,
-				[departmentName, title, salary]
+				[departmentName, roleTitle, roleSalary]
 			);
 		} catch (error) {
 			throw new Error(`Error adding role: ${error}`);
@@ -70,8 +70,8 @@ class Database {
 			return await this.executeQueryAsync(
 				`SELECT e.id, e.first_name, e.last_name, r.title, d.name, r.salary, CONCAT(m.first_name, ' ', m.last_name) AS manager
 					FROM employee e
-						JOIN \`role\` r ON r.id = e.role_id
-						JOIN department d ON d.id = r.department_id
+						LEFT JOIN \`role\` r ON r.id = e.role_id
+						LEFT JOIN department d ON d.id = r.department_id
 						LEFT JOIN employee m ON m.id = e.manager_id`
 			);
 		} catch (error) {
@@ -79,40 +79,40 @@ class Database {
 		}
 	}
 
-	async addEmployeeAsync(first, last, role, manager) {
+	async addEmployeeAsync(first, last, roleTitle, managerName) {
 		try {
-			const managerNames = manager.trim().split(" ");
+			const managerNames = managerName.trim().split(" ");
 			await this.executeQueryAsync(
 				`SET @roleId = (SELECT id FROM \`role\` WHERE title = ?);
 				SET @managerId = (SELECT id FROM employee WHERE first_name = ? AND last_name = ?);
 				INSERT INTO employee (first_name, last_name, role_id, manager_id)
 				VALUES (?, ?, @roleId, @managerId)`,
-				[role, managerNames[0], managerNames[1], first, last]
+				[roleTitle, managerNames[0], managerNames[1], first, last]
 			);
 		} catch (error) {
 			throw new Error(`Error adding employee: ${error}`);
 		}
 	}
 
-	async updateEmployeeRoleAsync(employee, role) {
+	async updateEmployeeRoleAsync(employeeName, roleTitle) {
 		try {
-			const employeeNames = employee.trim().split(" ");
+			const employeeNames = employeeName.trim().split(" ");
 			await this.executeQueryAsync(
 				`SET @roleId = (SELECT id FROM \`role\` WHERE title = ?);
 				UPDATE employee
 				SET role_id = @roleId
 				WHERE first_name = ? AND last_name = ?`,
-				[role, employeeNames[0], employeeNames[1]]
+				[roleTitle, employeeNames[0], employeeNames[1]]
 			);
 		} catch (error) {
 			throw new Error(`Error updating employee role: ${error}`);
 		}
 	}
 
-	async updateEmployeeManagerAsync(employee, manager) {
+	async updateEmployeeManagerAsync(employeeName, managerName) {
 		try {
-			const employeeNames = employee.trim().split(" ");
-			const managerNames = manager.trim().split(" ");
+			const employeeNames = employeeName.trim().split(" ");
+			const managerNames = managerName.trim().split(" ");
 			await this.executeQueryAsync(
 				`SET @managerId = (SELECT id FROM employee WHERE first_name = ? AND last_name = ?);
 				UPDATE employee
@@ -139,16 +139,16 @@ class Database {
 		}
 	}
 
-	async getAllEmployeesByManagerAsync(manager) {
+	async getAllEmployeesByManagerAsync(managerName) {
 		try {
-			const managerNames = manager.trim().split(" ");
+			const managerNames = managerName.trim().split(" ");
 			return (
 				await this.executeQueryAsync(
 					`SET @managerId = (SELECT id FROM employee WHERE first_name = ? AND last_name = ?);
 					SELECT e.id, e.first_name, e.last_name, r.title, d.name, r.salary, CONCAT(m.first_name, ' ', m.last_name) AS manager
 						FROM employee e
-							JOIN \`role\` r ON r.id = e.role_id
-							JOIN department d ON d.id = r.department_id
+							LEFT JOIN \`role\` r ON r.id = e.role_id
+							LEFT JOIN department d ON d.id = r.department_id
 							LEFT JOIN employee m ON m.id = e.manager_id
 						WHERE e.manager_id = @managerId`,
 					[managerNames[0], managerNames[1]]
@@ -159,22 +159,62 @@ class Database {
 		}
 	}
 
-	async getAllEmployeesByDepartmentAsync(department) {
+	async getAllEmployeesByDepartmentAsync(departmentName) {
 		try {
 			return (
 				await this.executeQueryAsync(
 					`SET @departmentId = (SELECT id FROM department WHERE name = ?);
 				SELECT e.id, e.first_name, e.last_name, r.title, d.name, r.salary, CONCAT(m.first_name, ' ', m.last_name) AS manager
 					FROM employee e
-						JOIN \`role\` r ON r.id = e.role_id
-						JOIN department d ON d.id = r.department_id
+						LEFT JOIN \`role\` r ON r.id = e.role_id
+						LEFT JOIN department d ON d.id = r.department_id
 						LEFT JOIN employee m ON m.id = e.manager_id
 					WHERE d.id = @departmentId`,
-					[department]
+					[departmentName]
 				)
 			)[1];
 		} catch (error) {
 			throw new Error(`Error retrieving employees by department: ${error}`);
+		}
+	}
+
+	async deleteDepartmentAsync(departmentName) {
+		try {
+			return await this.executeQueryAsync(
+				`DELETE
+					FROM department
+					WHERE name = ?`,
+				[departmentName]
+			);
+		} catch (error) {
+			throw new Error(`Error deleting department: ${error}`);
+		}
+	}
+
+	async deleteRoleAsync(roleTitle) {
+		try {
+			return await this.executeQueryAsync(
+				`DELETE
+					FROM \`role\`
+					WHERE title = ?`,
+				[roleTitle]
+			);
+		} catch (error) {
+			throw new Error(`Error deleting role: ${error}`);
+		}
+	}
+
+	async deleteEmployeeAsync(employeeName) {
+		try {
+			const employeeNames = employeeName.trim().split(" ");
+			return await this.executeQueryAsync(
+				`DELETE
+					FROM employee
+					WHERE first_name = ? AND last_name = ?`,
+				[employeeNames[0], employeeNames[1]]
+			);
+		} catch (error) {
+			throw new Error(`Error deleting employee: ${error}`);
 		}
 	}
 }

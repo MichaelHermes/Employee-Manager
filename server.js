@@ -50,8 +50,8 @@ let mainMenu = async () => {
 				case inquirer.actions.ADDROLE:
 					answers = await inquirer.promptAddRoleAsync();
 					if (!answers) throw new Error("Missing role information");
-					const { title, salary, departmentName } = answers;
-					await db.addRoleAsync(title, parseInt(salary), departmentName);
+					const { title, salary, department } = answers;
+					await db.addRoleAsync(title, parseInt(salary), department);
 					console.log(`Added ${title} role to the database`);
 					break;
 				case inquirer.actions.ADDEMPLOYEE:
@@ -75,6 +75,27 @@ let mainMenu = async () => {
 						answers;
 					await db.updateEmployeeManagerAsync(updateManagerEmp, updateManager);
 					console.log(`Updated ${updateManagerEmp}'s manager in the database`);
+					break;
+				case inquirer.actions.DELETEDEPARTMENT:
+					answers = await inquirer.promptDeleteDepartmentAsync();
+					if (!answers) throw new Error("Invalid department selection");
+					const { department: deleteDept } = answers;
+					await db.deleteDepartmentAsync(deleteDept);
+					console.log(`Deleted ${deleteDept} from the database`);
+					break;
+				case inquirer.actions.DELETEROLE:
+					answers = await inquirer.promptDeleteRoleAsync();
+					if (!answers) throw new Error("Invalid role selection");
+					const { role: deleteRole } = answers;
+					await db.deleteRoleAsync(deleteRole);
+					console.log(`Deleted ${deleteRole} from the database`);
+					break;
+				case inquirer.actions.DELETEEMPLOYEE:
+					answers = await inquirer.promptDeleteEmployeeAsync();
+					if (!answers) throw new Error("Invalid employee selection");
+					const { employee: deleteEmp } = answers;
+					await db.deleteEmployeeAsync(deleteEmp);
+					console.log(`Deleted ${deleteEmp} from the database`);
 					break;
 				default:
 					quit = true;
