@@ -1,21 +1,19 @@
-const express = require("express");
 const cTable = require("console.table");
+const figlet = require("figlet");
+const Database = require("./utils/database");
 const Inquirer = require("./utils/inquirer");
-
-const PORT = process.env.PORT || 3001;
-const app = express();
 const inquirer = new Inquirer();
 
-// Express middleware
-app.use(express.urlencoded({ extended: false }));
-app.use(express.json());
+const db = new Database();
 
-let mainMenu = async () => {
-	let quit = false;
-
+/**
+ * Main menu logic to prompt for user selection and then facilitate the selection.
+ * @returns void
+ */
+const mainMenu = async () => {
 	try {
-		const { db, action } = await inquirer.promptMainMenuAsync();
-		if (db && action) {
+		const { action } = await inquirer.promptMainMenuAsync();
+		if (action) {
 			switch (action) {
 				case inquirer.actions.VIEWDEPARTMENTS:
 					console.log("");
@@ -107,24 +105,37 @@ let mainMenu = async () => {
 					console.log(`Deleted ${deleteEmp} from the database`);
 					break;
 				default:
-					quit = true;
-					break;
+					return;
 			}
-		}
-
-		if (!quit) {
-			await mainMenu(); // Recursively call back to the 'mainMenu' function to allow the user to continue making selections.
+			// Recursively call back to the 'mainMenu' function to allow the user to continue making selections.
+			return await mainMenu();
 		}
 	} catch (error) {
 		console.error(error);
 	}
 };
 
-// Default response for any other request (Not Found)
-app.use((req, res) => {
-	res.status(404).end();
-});
-
-app.listen(PORT, () => {});
-
-mainMenu();
+/**
+ * Displays an ASCII Art title for the console application and then launches the main menu.
+ */
+figlet(
+	`Employee
+	Manager`,
+	{
+		font: "Standard",
+		horizontalLayout: "full",
+		verticalLayout: "full",
+	},
+	(err, data) => {
+		if (err) {
+			console.log("Something went wrong with Figlet...");
+			return;
+		}
+		console.log(data);
+		// Add some space between the fancy title and the main menu.
+		console.log("");
+		mainMenu().then(() => {
+			process.exit(0); // I'm not sure this SHOULD be required, but I couldn't get Node.js to exit without it. I'm assuming it's some asynchronous behavior that I couldn't track down...
+		});
+	}
+);

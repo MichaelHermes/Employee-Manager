@@ -3,6 +3,7 @@ const Database = require("./database");
 
 class Inquirer {
 	constructor() {
+		// An enumeration to hold all of the actions available to the user in the main menu.
 		this._actions = {
 			VIEWDEPARTMENTS: "View All Departments",
 			VIEWROLES: "View All Roles",
@@ -21,6 +22,7 @@ class Inquirer {
 			QUIT: "Quit",
 		};
 		this._db = new Database();
+		// The Inquirer prompt structure for the main menu.
 		this._mainMenu = {
 			type: "list",
 			name: "action",
@@ -54,73 +56,16 @@ class Inquirer {
 		return this._actions;
 	}
 
+	/**
+	 * Prompts the main menu to the user.
+	 * @returns A Promise that resolves with the Inquirer prompt selection.
+	 */
 	async promptMainMenuAsync() {
 		return new Promise((resolve, reject) => {
 			inquirer
 				.prompt(this._mainMenu)
 				.then(answers => {
-					switch (this._mainMenu.choices.indexOf(answers.action) + 1) {
-						case 1:
-							resolve({ db: this._db, action: this._actions.VIEWDEPARTMENTS });
-							break;
-						case 2:
-							resolve({ db: this._db, action: this._actions.VIEWROLES });
-							break;
-						case 3:
-							resolve({ db: this._db, action: this._actions.VIEWEMPLOYEES });
-							break;
-						case 4:
-							resolve({
-								db: this._db,
-								action: this._actions.VIEWEMPLOYEESBYMANAGER,
-							});
-							break;
-						case 5:
-							resolve({
-								db: this._db,
-								action: this._actions.VIEWEMPLOYEESBYDEPARTMENT,
-							});
-							break;
-						case 6:
-							resolve({
-								db: this._db,
-								action: this._actions.VIEWUTILIZEDBUDGET,
-							});
-							break;
-						case 8:
-							resolve({ db: this._db, action: this._actions.ADDDEPARTMENT });
-							break;
-						case 9:
-							resolve({ db: this._db, action: this._actions.ADDROLE });
-							break;
-						case 10:
-							resolve({ db: this._db, action: this._actions.ADDEMPLOYEE });
-							break;
-						case 12:
-							resolve({
-								db: this._db,
-								action: this._actions.UPDATEEMPLOYEEROLE,
-							});
-							break;
-						case 13:
-							resolve({
-								db: this._db,
-								action: this._actions.UPDATEEMPLOYEEMANAGER,
-							});
-							break;
-						case 15:
-							resolve({ db: this._db, action: this._actions.DELETEDEPARTMENT });
-							break;
-						case 16:
-							resolve({ db: this._db, action: this._actions.DELETEROLE });
-							break;
-						case 17:
-							resolve({ db: this._db, action: this._actions.DELETEEMPLOYEE });
-							break;
-						case 19:
-							resolve({ db: this._db, action: this._actions.QUIT });
-							break;
-					}
+					resolve({ action: answers.action });
 				})
 				.catch(error => {
 					reject(error);
@@ -128,6 +73,10 @@ class Inquirer {
 		});
 	}
 
+	/**
+	 * Prompts the user for new department details (name) and returns a Promise that resolves with the answers.
+	 * @returns A Promise that resolves with the Inquirer prompt answers.
+	 */
 	async promptAddDepartmentAsync() {
 		return new Promise((resolve, reject) => {
 			inquirer
@@ -144,11 +93,32 @@ class Inquirer {
 		});
 	}
 
+	/**
+	 * Prompts the user for new role details (title, salary, department).
+	 * @returns A Promise that resolves with the Inquirer prompt answers.
+	 */
 	async promptAddRoleAsync() {
-		const prompts = await this.buildRolePromptsAsync();
+		const departmentNames = (await this._db.getAllDepartmentsAsync()).map(
+			d => d.department
+		);
 		return new Promise((resolve, reject) => {
 			inquirer
-				.prompt(prompts)
+				.prompt([
+					{
+						name: "title",
+						message: "What is the name of the role?",
+					},
+					{
+						name: "salary",
+						message: "What is the salary of the role?",
+					},
+					{
+						type: "list",
+						name: "department",
+						message: "Which department does the role belong to?",
+						choices: departmentNames,
+					},
+				])
 				.then(answers => {
 					resolve(answers);
 				})
@@ -158,6 +128,10 @@ class Inquirer {
 		});
 	}
 
+	/**
+	 * Prompts the user for new employee details (first, last, role, manager).
+	 * @returns A Promise that resolves with the Inquirer prompt answers.
+	 */
 	async promptAddEmployeeAsync() {
 		const prompts = await this.buildEmployeePromptsAsync(
 			this._actions.ADDEMPLOYEE
@@ -174,6 +148,10 @@ class Inquirer {
 		});
 	}
 
+	/**
+	 * Prompts the user for employee role update details (employee, role).
+	 * @returns A Promise that resolves with the Inquirer prompt answers.
+	 */
 	async promptUpdateEmployeeRoleAsync() {
 		const prompts = await this.buildEmployeePromptsAsync(
 			this._actions.UPDATEEMPLOYEEROLE
@@ -190,6 +168,10 @@ class Inquirer {
 		});
 	}
 
+	/**
+	 * Prompts the user for employee manager update details (employee, manager).
+	 * @returns A Promise that resolves with the Inquirer prompt answers.
+	 */
 	async promptUpdateEmployeeManagerAsync() {
 		const prompts = await this.buildEmployeePromptsAsync(
 			this._actions.UPDATEEMPLOYEEMANAGER
@@ -206,6 +188,10 @@ class Inquirer {
 		});
 	}
 
+	/**
+	 * Prompts the user for a manager for which to display employees.
+	 * @returns A Promise that resolves with the Inquirer prompt answers.
+	 */
 	async promptViewEmployeesByManagerAsync() {
 		const prompts = await this.buildEmployeePromptsAsync(
 			this._actions.VIEWEMPLOYEESBYMANAGER
@@ -222,6 +208,10 @@ class Inquirer {
 		});
 	}
 
+	/**
+	 * Prompts the user for a department for which to display employees.
+	 * @returns A Promise that resolves with the Inquirer prompt answers.
+	 */
 	async promptViewEmployeesByDepartmentAsync() {
 		const prompts = await this.buildEmployeePromptsAsync(
 			this._actions.VIEWEMPLOYEESBYDEPARTMENT
@@ -238,9 +228,13 @@ class Inquirer {
 		});
 	}
 
+	/**
+	 * Prompts the user for a department to delete.
+	 * @returns A Promise that resolves with the Inquirer prompt answers.
+	 */
 	async promptDeleteDepartmentAsync() {
 		const departmentNames = (await this._db.getAllDepartmentsAsync()).map(
-			d => d.name
+			d => d.department
 		);
 		return new Promise((resolve, reject) => {
 			inquirer
@@ -259,8 +253,12 @@ class Inquirer {
 		});
 	}
 
+	/**
+	 * Prompts the user for a role to delete.
+	 * @returns A Promise that resolves with the Inquirer prompt answers.
+	 */
 	async promptDeleteRoleAsync() {
-		const roleNames = (await this._db.getAllRolesAsync()).map(r => r.title);
+		const roleNames = (await this._db.getAllRolesAsync()).map(r => r.role);
 		return new Promise((resolve, reject) => {
 			inquirer
 				.prompt({
@@ -278,6 +276,10 @@ class Inquirer {
 		});
 	}
 
+	/**
+	 * Prompts the user for an employee to delete.
+	 * @returns A Promise that resolves with the Inquirer prompt answers.
+	 */
 	async promptDeleteEmployeeAsync() {
 		const prompts = await this.buildEmployeePromptsAsync(
 			this._actions.DELETEEMPLOYEE
@@ -294,36 +296,19 @@ class Inquirer {
 		});
 	}
 
-	async buildRolePromptsAsync() {
-		const departmentNames = (await this._db.getAllDepartmentsAsync()).map(
-			d => d.name
-		);
-		return [
-			{
-				name: "title",
-				message: "What is the name of the role?",
-			},
-			{
-				name: "salary",
-				message: "What is the salary of the role?",
-			},
-			{
-				type: "list",
-				name: "department",
-				message: "Which department does the role belong to?",
-				choices: departmentNames,
-			},
-		];
-	}
-
+	/**
+	 * Builds a list of Inquirer prompts for an employee action.
+	 * @param {*} action An employee-specific action.
+	 * @returns An array representing the Inquirer prompts.
+	 */
 	async buildEmployeePromptsAsync(action) {
-		const roleNames = (await this._db.getAllRolesAsync()).map(r => r.title);
+		const roleNames = (await this._db.getAllRolesAsync()).map(r => r.role);
 		const employeeNames = (await this._db.getAllEmployeesAsync()).map(e =>
 			e.first_name.concat(" ", e.last_name)
 		);
 		const managerNames = await this._db.getAllManagersAsync();
 		const departmentNames = (await this._db.getAllDepartmentsAsync()).map(
-			d => d.name
+			d => d.department
 		);
 
 		switch (action) {

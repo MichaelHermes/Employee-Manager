@@ -1,27 +1,26 @@
 {
-  "name": "12-Employee-Tracker",
-  "version": "1.0.0",
-  "description": "This is a command-line application that provides company employee management functionality.",
-  "main": "server.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node server.js"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/MichaelHermes/Employee-Tracker.git"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/MichaelHermes/Employee-Tracker/issues"
-  },
-  "homepage": "https://github.com/MichaelHermes/Employee-Tracker#readme",
-  "dependencies": {
-    "console.table": "^0.10.0",
-    "express": "^4.17.1",
-    "inquirer": "^8.1.2",
-    "mysql2": "^2.3.0"
-  }
+	"name": "12-Employee-Tracker",
+	"version": "1.0.0",
+	"description": "This is a command-line application that provides company employee management functionality.",
+	"main": "server.js",
+	"scripts": {
+		"test": "echo \"Error: no test specified\" && exit 1"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/MichaelHermes/Employee-Tracker.git"
+	},
+	"keywords": [],
+	"author": "",
+	"license": "ISC",
+	"bugs": {
+		"url": "https://github.com/MichaelHermes/Employee-Tracker/issues"
+	},
+	"homepage": "https://github.com/MichaelHermes/Employee-Tracker#readme",
+	"dependencies": {
+		"console.table": "^0.10.0",
+		"figlet": "^1.5.2",
+		"inquirer": "^8.1.2",
+		"mysql2": "^2.3.0"
+	}
 }

@@ -6,13 +6,19 @@ class Database {
 		this.pool = mysql.createPool({
 			host: "localhost",
 			user: "root", // MySQL username
-			password: "1stmile1234", // MySQL password
+			password: process.env.MYSQL, // MySQL password
 			database: "company_db",
 			connectionLimit: 10,
 			multipleStatements: true,
 		});
 	}
 
+	/**
+	 * Executes a prepared statement SQL query.
+	 * @param {string} query A SQL query to execute.
+	 * @param {any} params Parameters for the SQL query.
+	 * @returns The SQL query results.
+	 */
 	async executeQueryAsync(query, params) {
 		// Query database
 		const results = await this.pool.query(query, params);
@@ -21,14 +27,24 @@ class Database {
 		return results[0];
 	}
 
+	/**
+	 * Retrieves all departments.
+	 * @returns The SQL query results.
+	 */
 	async getAllDepartmentsAsync() {
 		try {
-			return await this.executeQueryAsync("SELECT * FROM department");
+			return await this.executeQueryAsync(
+				"SELECT id, name AS department FROM department"
+			);
 		} catch (error) {
 			throw new Error(`Error retrieving departments: ${error}`);
 		}
 	}
 
+	/**
+	 * Adds a new department to the database.
+	 * @param {string} departmentName The department name to add.
+	 */
 	async addDepartmentAsync(departmentName) {
 		try {
 			await this.executeQueryAsync(
@@ -40,6 +56,10 @@ class Database {
 		}
 	}
 
+	/**
+	 * Retrieves all roles.
+	 * @returns The SQL query results.
+	 */
 	async getAllRolesAsync() {
 		try {
 			return await this.executeQueryAsync(
@@ -52,6 +72,12 @@ class Database {
 		}
 	}
 
+	/**
+	 * Adds a new role to the database.
+	 * @param {string} roleTitle
+	 * @param {number} roleSalary
+	 * @param {string} departmentName
+	 */
 	async addRoleAsync(roleTitle, roleSalary, departmentName) {
 		try {
 			await this.executeQueryAsync(
@@ -65,6 +91,10 @@ class Database {
 		}
 	}
 
+	/**
+	 * Retrieves all employees.
+	 * @returns The SQL query results.
+	 */
 	async getAllEmployeesAsync() {
 		try {
 			return await this.executeQueryAsync(
@@ -79,6 +109,13 @@ class Database {
 		}
 	}
 
+	/**
+	 * Adds a new employee to the database.
+	 * @param {string} first Employee first name.
+	 * @param {string} last Employee last name.
+	 * @param {string} roleTitle Role title.
+	 * @param {string} managerName Manager name.
+	 */
 	async addEmployeeAsync(first, last, roleTitle, managerName) {
 		try {
 			const managerNames = managerName.trim().split(" ");
@@ -94,6 +131,11 @@ class Database {
 		}
 	}
 
+	/**
+	 * Updates an employee's role in the database.
+	 * @param {string} employeeName Employee name.
+	 * @param {string} roleTitle Role title.
+	 */
 	async updateEmployeeRoleAsync(employeeName, roleTitle) {
 		try {
 			const employeeNames = employeeName.trim().split(" ");
@@ -109,6 +151,11 @@ class Database {
 		}
 	}
 
+	/**
+	 * Updates an employee's manager in the database.
+	 * @param {string} employeeName Employee name.
+	 * @param {string} managerName Manager name.
+	 */
 	async updateEmployeeManagerAsync(employeeName, managerName) {
 		try {
 			const employeeNames = employeeName.trim().split(" ");
@@ -125,6 +172,10 @@ class Database {
 		}
 	}
 
+	/**
+	 * Retrieves all employees who are currently managers.
+	 * @returns The SQL query results.
+	 */
 	async getAllManagersAsync() {
 		try {
 			return await this.executeQueryAsync(
@@ -139,6 +190,11 @@ class Database {
 		}
 	}
 
+	/**
+	 * Retrieves all employees under the given manager.
+	 * @param {string} managerName Manager name.
+	 * @returns The SQL query results.
+	 */
 	async getAllEmployeesByManagerAsync(managerName) {
 		try {
 			const managerNames = managerName.trim().split(" ");
@@ -159,6 +215,11 @@ class Database {
 		}
 	}
 
+	/**
+	 * Retrieves all employees under the given department.
+	 * @param {string} departmentName Department name.
+	 * @returns The SQL query results.
+	 */
 	async getAllEmployeesByDepartmentAsync(departmentName) {
 		try {
 			return (
@@ -178,9 +239,13 @@ class Database {
 		}
 	}
 
+	/**
+	 * Deletes the department from the database. Cascade deletes any associated Roles.
+	 * @param {string} departmentName Department name.
+	 */
 	async deleteDepartmentAsync(departmentName) {
 		try {
-			return await this.executeQueryAsync(
+			await this.executeQueryAsync(
 				`DELETE
 					FROM department
 					WHERE name = ?`,
@@ -191,9 +256,13 @@ class Database {
 		}
 	}
 
+	/**
+	 * Deletes the role from the database.
+	 * @param {string} roleTitle Role title.
+	 */
 	async deleteRoleAsync(roleTitle) {
 		try {
-			return await this.executeQueryAsync(
+			await this.executeQueryAsync(
 				`DELETE
 					FROM \`role\`
 					WHERE title = ?`,
@@ -204,10 +273,14 @@ class Database {
 		}
 	}
 
+	/**
+	 * Deletes the employee from the database.
+	 * @param {string} employeeName Employee name.
+	 */
 	async deleteEmployeeAsync(employeeName) {
 		try {
 			const employeeNames = employeeName.trim().split(" ");
-			return await this.executeQueryAsync(
+			await this.executeQueryAsync(
 				`DELETE
 					FROM employee
 					WHERE first_name = ? AND last_name = ?`,
@@ -218,6 +291,10 @@ class Database {
 		}
 	}
 
+	/**
+	 * Calculates the total departmental utilized budget.
+	 * @returns The SQL query results.
+	 */
 	async getDepartmentUtilizedBudgetsAsync() {
 		try {
 			return await this.executeQueryAsync(
